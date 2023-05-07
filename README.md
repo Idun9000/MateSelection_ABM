@@ -1,2 +1,2 @@
 # myrepo
-Repository for testing my Git/GitHub setup. This is a line from RStudio
+Repository for the Social and Cultural Dynamics exam
