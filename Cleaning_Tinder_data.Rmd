@@ -1,0 +1,79 @@
+---
+title: "Tinder_data"
+author: "Tilde Sloth"
+date: "2023-05-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(tidyverse, rjson, jsonlite, dplyr, tidyjson, purrr)
+```
+
+## Data cleaning test on subset of data
+```{r}
+subset_file <- "subset.json"
+try <- tidyjson::read_json(subset_file)
+try <- try %>% spread_all
+
+NestedStructureOverview <- jsonlite::read_json(subset_file, simplifyVector = FALSE)
+
+# Sum the "appOpens" columns together and create a new column with the total
+try <- try %>%
+  mutate(totalAppOpens = rowSums(across(starts_with("appOpens")), na.rm = TRUE), 
+         totalMatches = rowSums(across(starts_with("matches")), na.rm = TRUE), 
+         totalSwipesLikes = rowSums(across(starts_with("swipeLikes")), na.rm = TRUE), 
+         totalMessagesReceived = rowSums(across(starts_with("messagesReceived")), na.rm = TRUE), 
+         totalMessagesSent = rowSums(across(starts_with("messagesSent")), na.rm = TRUE))
+
+try <- try %>% 
+  select(-starts_with("appOpens"), 
+         -starts_with("matches"), 
+         -starts_with("swipeLikes"), 
+         -starts_with("swipePasses"), 
+         -starts_with("swipes.likes"), 
+         -starts_with("swipes.passes"), 
+         -starts_with("messages"))
+
+```
+
+## Data cleaning on the real deal
+
+```{r}
+# Investigating how nested structure is different when there are several id's
+FullNestedStructure <- jsonlite::read_json(real_file, simplifyVector = FALSE)
+
+df <- FullNestedStructure %>% as.tbl_json %>% spread_all
+
+df <- df %>%
+  mutate(totalAppOpens = rowSums(across(starts_with("appOpens")), na.rm = TRUE), 
+         totalMatches = rowSums(across(starts_with("matches")), na.rm = TRUE), 
+         totalSwipesLikes = rowSums(across(starts_with("swipeLikes")), na.rm = TRUE), 
+         totalMessagesReceived = rowSums(across(starts_with("messagesReceived")), na.rm = TRUE), 
+         totalMessagesSent = rowSums(across(starts_with("messagesSent")), na.rm = TRUE))
+
+df <- df %>% 
+  select(-starts_with("appOpens"), 
+         -starts_with("matches"), 
+         -starts_with("swipeLikes"), 
+         -starts_with("swipePasses"), 
+         -starts_with("swipes.likes"), 
+         -starts_with("swipes.passes"), 
+         -starts_with("messages"))
+
+# Remove column 33 (with a list structure) from the data frame
+df <- df[-33]
+
+# Remove the list column from each row
+df <- lapply(df, function(x) ifelse(lengths(x) > 0, unlist(x), x))
+df <- as.data.frame(df)
+
+df <- df[,-33]
+
+write.csv(df, "cleaned_tinder_data.csv", row.names = TRUE)
+
+```
+
