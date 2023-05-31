@@ -1,0 +1,597 @@
+---
+title: "SocCult"
+author: "Tilde Sloth"
+date: "2023-04-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading packages
+```{r}
+pacman::p_load(tidyverse, rjson, jsonlite, dplyr, tidyjson, purrr, plyr, readr, grid, gridExtra, rethinking, lme4, lmerTest, dineq)
+
+```
+
+## Loading data for equal gender ratio (takes 100 years)
+```{r}
+ER_001 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.01",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+ER_005 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.05",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+ER_01 <- list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.1",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+ER_02 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.2",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+ER_03 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.3",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+  
+ER_04 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.4",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+ER_05 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Equal_ratio/PF_0.5",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+```
+
+## Loading data for unequal gender ratio (takes 200 years)
+```{r}
+UR_001 <- list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.01",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+UR_005 <- list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.05",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+UR_01 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.1",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+UR_02 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.2",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+UR_03 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.3",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+UR_04 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.4",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+UR_05 <-list.files(path = "/Users/tildeidunsloth/Desktop/SocCult_exam/data/Unequal_ratio/PF_0.5",
+                    pattern = "*.csv", full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows
+
+```
+
+## Investigating equal ratio
+```{r}
+#Equal ratio - perception factor 0.01
+
+ER_001 <- ER_001 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E001 <- ER_001 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.01")+ theme_bw()
+
+ER_001 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_001%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+
+```{r}
+#Equal ratio - perception factor 0.05
+
+ER_005 <- ER_005 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E005 <- ER_005 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.05")+theme_bw()
+
+ER_005 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_005%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Equal ratio - perception factor 0.1
+ER_01 <- ER_01 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E1 <-ER_01 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.1")+theme_bw()
+
+ER_01 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_01%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+
+```
+
+```{r}
+#Equal ratio - perception factor 0.2
+ER_02 <- ER_02 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E2 <- ER_02 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.2")+theme_bw()
+
+ER_02 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_02%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Equal ratio - perception factor 0.3
+ER_03 <- ER_03 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E3 <- ER_03 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.3")
+
+ER_03 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_03%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Equal ratio - perception factor 0.4
+ER_04 <- ER_04 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E4 <- ER_04 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.4")
+
+ER_04 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_04%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Equal ratio - perception factor 0.5
+ER_05 <- ER_05 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+E5 <- ER_05 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.5")
+
+ER_05 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+ER_05%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+## Giant mega plot equal ratio
+```{r}
+gridExtra::grid.arrange(E001, E005, E1, E2, ncol=2, nrow=2,
+     top = textGrob("Equal ratio: Percentage matches relative to swipes",gp=gpar(fontsize=20,font=3)))
+```
+
+## Investigating unequal ratio
+```{r}
+#Unequal ratio - perception factor 0.01
+
+UR_001 <- UR_001 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U001 <- UR_001 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.01")+theme_bw()
+
+UR_001 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_001%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+
+```{r}
+#Unequal ratio - perception factor 0.05
+
+UR_005 <- UR_005 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U005 <- UR_005 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.05")+theme_bw()
+
+UR_005 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_005%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+
+```{r}
+#Unequal ratio - perception factor 0.1
+
+UR_01 <- UR_01 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U1 <-UR_01 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.1")+theme_bw()
+
+UR_01 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_01%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+
+```{r}
+#Unequal ratio - perception factor 0.2
+
+UR_02 <- UR_02 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U2 <- UR_02 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.2")+theme_bw()
+
+UR_02 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_02%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Unequal ratio - perception factor 0.3
+
+UR_03 <- UR_03 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U3 <- UR_03 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.3")
+
+UR_03 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_03%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Unequal ratio - perception factor 0.4
+
+UR_04 <- UR_04 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U4 <- UR_04 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.4")
+
+UR_04 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_04%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+
+```{r}
+#Unequal ratio - perception factor 0.5
+
+UR_05 <- UR_05 %>% 
+  mutate(Percentage_matches = N_matches/N_swipes * 100, Gender = ifelse(Woman == TRUE, "F", "M"))
+
+U5 <- UR_05 %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Perception factor = 0.5")
+
+UR_05 %>% 
+  ggplot(aes(x = P_mate_value, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Gender differences in perceived mate value")
+
+UR_05%>% 
+  ggplot(aes(x = `Mate_value:`, y = Percentage_matches, color = Gender)) + geom_point()
+```
+## Giant mega plot for unequal ratio
+```{r}
+gridExtra::grid.arrange(U001, U005, U1, U2, ncol=2, nrow=2,
+     top = textGrob("Unequal ratio: Percentage matches relative to swipes",gp=gpar(fontsize=20,font=3)))
+```
+## Investigating inequality in match acquisition for unequal ratio
+```{r}
+#H_1.2 (perception_factor = 0.01)
+UR_001M <- UR_001 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_U001 <- length(UR_001M$ID)*0.1
+
+data_men_order_U001 <- UR_001M[order(-UR_001M$Percentage_matches),]
+
+number_of_matches_U001 <- sum(UR_001M$N_matches)
+
+data_top_ten_men_U001 <- data_men_order_U001[1:top_ten_men_U001,]
+
+number_of_matches_top_ten_U001 <- sum(data_top_ten_men_U001$N_matches)
+
+TopU001 <- number_of_matches_top_ten_U001/number_of_matches_U001*100
+TopU001
+
+# The top 10 % will only get 4 % of all matches
+```
+
+```{r}
+#H_1.2 (perception_factor = 0.05)
+UR_005M <- UR_005 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_U005 <- length(UR_005M$ID)*0.1
+
+data_men_order_U005 <- UR_005M[order(-UR_005M$Percentage_matches),]
+
+number_of_matches_U005 <- sum(UR_005M$N_matches)
+
+data_top_ten_men_U005 <- data_men_order_U005[1:top_ten_men_U005,]
+
+number_of_matches_top_ten_U005 <- sum(data_top_ten_men_U005$N_matches)
+
+TopU005 <- number_of_matches_top_ten_U005/number_of_matches_U005*100
+
+TopU005
+
+# The top 10 % will only get 14.95 % of all matches
+```
+
+```{r}
+#H_1.2 (perception_factor = 0.1)
+UR_01M <- UR_01 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_U01 <- length(UR_01M$ID)*0.1
+
+data_men_order_U01 <- UR_01M[order(-UR_01M$Percentage_matches),]
+
+number_of_matches_U01 <- sum(UR_01M$N_matches)
+
+data_top_ten_men_U01 <- data_men_order_U01[1:top_ten_men_U01,]
+
+number_of_matches_top_ten_U01 <- sum(data_top_ten_men_U01$N_matches)
+
+TopU01 <- number_of_matches_top_ten_U01/number_of_matches_U01*100
+
+TopU01
+
+# The top 10 % will only get 15.8 % of all matches
+```
+
+```{r}
+#H_1.2 (perception_factor = 0.2)
+UR_02M <- UR_02 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_U02 <- length(UR_02M$ID)*0.1
+
+data_men_order_U02 <- UR_02M[order(-UR_02M$Percentage_matches),]
+
+number_of_matches_U02 <- sum(UR_02M$N_matches)
+
+data_top_ten_men_U02 <- data_men_order_U02[1:top_ten_men_U02,]
+
+number_of_matches_top_ten_U02 <- sum(data_top_ten_men_U02$N_matches)
+
+TopU02 <- number_of_matches_top_ten_U02/number_of_matches_U02*100
+
+TopU02
+
+# The top 10 % will only get 16 % of all matches
+```
+
+## Investigating inequality in match acquisition for equal ratio
+```{r}
+#H_1.2 (perception_factor = 0.01)
+ER_001M <- ER_001 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_E001 <- length(ER_001M$ID)*0.1
+
+data_men_order_E001 <- ER_001M[order(-ER_001M$Percentage_matches),]
+
+number_of_matches_E001 <- sum(ER_001M$N_matches)
+
+data_top_ten_men_E001 <- data_men_order_E001[1:top_ten_men_E001,]
+
+number_of_matches_top_ten_E001 <- sum(data_top_ten_men_E001$N_matches)
+
+TopE001 <-number_of_matches_top_ten_E001/number_of_matches_E001*100
+
+TopE001
+
+# The top 10 % will only get 3.36 % of all matches
+```
+
+```{r}
+#H_1.2 (perception_factor = 0.05)
+ER_005M <- ER_005 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_E005 <- length(ER_005M$ID)*0.1
+
+data_men_order_E005 <- ER_005M[order(-ER_005M$Percentage_matches),]
+
+number_of_matches_E005 <- sum(ER_005M$N_matches)
+
+data_top_ten_men_E005 <- data_men_order_E005[1:top_ten_men_E005,]
+
+number_of_matches_top_ten_E005 <- sum(data_top_ten_men_E005$N_matches)
+
+TopE005 <-number_of_matches_top_ten_E005/number_of_matches_E005*100
+
+TopE005
+
+# The top 10 % will only get 10 % of all matches
+```
+
+```{r}
+#H_1.2 (perception_factor = 0.1)
+ER_01M <- ER_01 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_E01 <- length(ER_01M$ID)*0.1
+
+data_men_order_E01 <- ER_01M[order(-ER_01M$Percentage_matches),]
+
+number_of_matches_E01 <- sum(ER_01M$N_matches)
+
+data_top_ten_men_E01 <- data_men_order_E01[1:top_ten_men_E01,]
+
+number_of_matches_top_ten_E01 <- sum(data_top_ten_men_E01$N_matches)
+
+TopE01 <-number_of_matches_top_ten_E01/number_of_matches_E01*100
+
+TopE01
+# The top 10 % will only get 9.7 % of all matches
+```
+
+```{r}
+#H_1.2 (perception_factor = 0.2)
+ER_02M <- ER_02 %>% 
+  dplyr::filter(Gender == "M")
+
+top_ten_men_E02 <- length(ER_02M$ID)*0.1
+
+data_men_order_E02 <- ER_02M[order(-ER_02M$Percentage_matches),]
+
+number_of_matches_E02 <- sum(ER_02M$N_matches)
+
+data_top_ten_men_E02 <- data_men_order_E02[1:top_ten_men_E02,]
+
+number_of_matches_top_ten_E02 <- sum(data_top_ten_men_E02$N_matches)
+
+TopE02 <-number_of_matches_top_ten_E02/number_of_matches_E02*100
+
+TopE02
+# The top 10 % will only get 9% of all matches
+```
+
+## Combining match acquisition results in a table
+```{r}
+# creating a table
+tab <- matrix(c(TopU001, TopE001, TopU005,TopE005, TopU01, TopE01, TopU02, TopE02), ncol = 2, byrow = TRUE)
+colnames(tab) <- c("Unequal Ratio", "Equal Ratio")
+rownames(tab) <- c("0.01", "0.05", "0.1", "0.2")
+tab <- as.table(tab)
+tab
+```
+
+## Stat time
+```{r}
+#Descriptive statistics - linear regression
+m_UR_02 <- lmerTest::lmer(Percentage_matches ~ Gender + (1|ID), data = UR_02)
+summary(m_UR_02)
+
+m_ER_02 <- lmerTest::lmer(Percentage_matches ~ Gender + (1|ID), ER_02)
+summary(m_ER_02)
+
+```
+
+```{r}
+#Descriptive statistics - Bayesian binomial regression
+UR_02_dat_list <- list(
+  N_swipes = UR_02$N_swipes,
+  N_matches = UR_02$N_matches,
+  Gender = ifelse(UR_02$Gender == "F", 1, 2)
+)
+
+m_UR_02_bayes <- ulam(
+  alist(N_matches ~ dbinom(N_swipes, p),
+        logit(p) <- a[Gender],
+        a[Gender] ~ dnorm(0,1.5)
+        ), data = UR_02_dat_list, chains = 4)
+
+precis(m_UR_02_bayes, depth = 2)
+
+# computing the difference
+post_UR_02 <- extract.samples(m_UR_02_bayes)
+mean(inv_logit(post_UR_02$a[,1]))
+mean(inv_logit(post_UR_02$a[,2]))
+
+diff_p_UR <- inv_logit(post_UR_02$a[,1]) - inv_logit(post_UR_02$a[,2])
+precis(diff_p_UR)
+
+
+ER_02_dat_list <- list(
+  N_swipes = ER_02$N_swipes,
+  N_matches = ER_02$N_matches,
+  Gender = ifelse(ER_02$Gender == "F", 1, 2)
+)
+
+m_ER_02_bayes <- ulam(
+  alist(N_matches ~ dbinom(N_swipes, p),
+        logit(p) <- a[Gender],
+        a[Gender] ~ dnorm(0,1.5)
+        ), data = ER_02_dat_list, chains = 4)
+
+precis(m_ER_02_bayes, depth = 2)
+
+# computing the difference
+post_ER_02 <- extract.samples(m_ER_02_bayes)
+
+diff_p_ER <- inv_logit(post_ER_02$a[,1]) - inv_logit(post_ER_02$a[,2])
+precis(diff_p_ER)
+```
+
+## Looking at gini coefficient
+```{r}
+#Finding gini coefficient
+gini.wtd(ER_001$N_matches)
+gini.wtd(ER_005$N_matches)
+gini.wtd(ER_01$N_matches)
+gini.wtd(ER_02$N_matches)
+
+gini.wtd(UR_001$N_matches)
+gini.wtd(UR_005$N_matches)
+gini.wtd(UR_01$N_matches)
+gini.wtd(UR_02$N_matches)
+
+gini.wtd(UR_001M$N_matches)
+gini.wtd(UR_005M$N_matches)
+gini.wtd(UR_01M$N_matches)
+gini.wtd(UR_02M$N_matches)
+
+gini.wtd(ER_001M$N_matches)
+gini.wtd(ER_005M$N_matches)
+gini.wtd(ER_01M$N_matches)
+gini.wtd(ER_02M$N_matches)
+```
+
+

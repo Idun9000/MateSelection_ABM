@@ -1,0 +1,125 @@
+---
+title: "Tinder_statistics"
+author: "Tilde Sloth"
+date: "2023-05-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading packages
+```{r}
+pacman::p_load(tidyverse)
+```
+
+## Loading in data
+```{r}
+data <- read_csv("cleaned_tinder_data.csv", show_col_types = FALSE)
+```
+
+## Doing some extra filtering and cleaning
+```{r}
+data <- data %>%
+  mutate(Gender = as.factor(user.gender), Interested_in = as.factor(user.interestedIn))
+  
+data <- data %>% 
+  select(-starts_with("user.gender"), -starts_with("user.interestedIn"), -starts_with("X")) %>% # removing columns we don't need
+  filter(Interested_in != "M and F") # removing bisexual
+
+data <- data %>% 
+  filter(!(Gender == "M" & Interested_in == "M") & !(Gender == "F" & Interested_in == "F")) # removing homosexuals
+
+data <- data %>% 
+  mutate(Percentage_matches = totalMatches/totalSwipesLikes * 100)
+
+```
+
+## Plotting distribution of percentage of matches for men and women
+```{r}
+data %>% 
+  ggplot(aes(x = Percentage_matches, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Percentage of matches relative to swipes") + theme_minimal()
+
+ggsave("match_percentage_plot.png")
+```
+
+## Exploratory plots
+```{r}
+data %>% 
+  ggplot(aes(x = totalAppOpens, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Total app opens") + xlim(0, 50000)
+
+data %>% 
+  ggplot(aes(x = totalMessagesReceived, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Total messages received")+ xlim(0, 20000)
+
+data %>% 
+  ggplot(aes(x = totalMessagesSent, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Total messages sent") + xlim(0, 20000)
+
+data %>% 
+  ggplot(aes(x = totalSwipesLikes, fill = Gender)) + geom_density(alpha = 0.5) + ggtitle("Total yes swipes") + xlim(0, 100000)
+
+data %>% 
+  ggplot(aes(x=Gender, fill = Gender)) + geom_bar(aes(y = (..count..)/sum(..count..)))
+
+data_men <- data %>% 
+  filter(Gender == "M")
+
+data_women <- data %>% 
+  filter(Gender == "F")
+```
+## Investigating inequality in match acquisition
+```{r}
+# Filter and select the top 10% of men
+top_20_percent_men <- data_men[order(data_men$Percentage_matches, decreasing = TRUE), ]
+num_men <- nrow(top_20_percent_men)
+top_20_percent_men <- top_20_percent_men[1:ceiling(0.1 * num_men), ]
+
+matches_top_twenty <- sum(top_20_percent_men$totalMatches)
+
+matches_all <- sum(data_men$totalMatches)
+
+matches_80 <- matches_all-matches_top_twenty
+
+matches_top_twenty/matches_all*100
+
+# The top 10 % men get 29 % of all matches
+```
+
+```{r}
+# Filter and select the top 10% women
+top_20_percent_women <- data_women[order(data_women$Percentage_matches, decreasing = TRUE), ]
+num_women <- nrow(top_20_percent_women)
+top_20_percent_women <- top_20_percent_women[1:ceiling(0.1* num_women), ]
+
+matches_top_twenty_women <- sum(top_20_percent_women$totalMatches)
+
+matches_all_women <- sum(data_women$totalMatches)
+
+matches_80_women <- matches_all_women-matches_top_twenty_women
+
+matches_top_twenty_women/matches_all_women*100
+
+```
+
+```{r}
+# Finding mean match percentage
+
+data_women_2 <- data_women %>% 
+  filter(Percentage_matches != "NaN")
+
+mean(data_women_2$Percentage_matches)
+
+data_men_2 <- data_men %>% 
+  filter(Percentage_matches != "NaN")
+
+mean(data_men_2$Percentage_matches)
+```
+
+## Looking at gini coefficient
+```{r}
+#Finding ginicoefficient
+gini.wtd(data$totalMatches)
+gini.wtd(data_men$totalMatches)
+gini.wtd(data_women$totalMatches)
+```
+
