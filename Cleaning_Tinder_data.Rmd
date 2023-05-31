@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(tidyverse, rjson, jsonlite, dplyr, tidyjson, purrr)
 ```
 
-## Data cleaning test on subset of data
+## Data cleaning and data converting test on subset of data
 ```{r}
 subset_file <- "subset.json"
 try <- tidyjson::read_json(subset_file)
@@ -40,7 +40,7 @@ try <- try %>%
 
 ```
 
-## Data cleaning on the real deal
+## Data cleaning on the real deal (Takes forever)
 
 ```{r}
 # Investigating how nested structure is different when there are several id's
